@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System.Net.Http;
 
 namespace DadJokeAPI
@@ -6,7 +6,7 @@ namespace DadJokeAPI
     public class ApiManager : IApiManager
     {
         private readonly HttpClient _httpClient;
-        private const string BaseURL = "https://dad-jokes.p.rapidapi.com";
+        private const string BaseUrl = "https://dad-jokes.p.rapidapi.com";
         private readonly string _apiKey;
 
         public ApiManager(HttpClient httpClient, string apiKey)
@@ -18,28 +18,37 @@ namespace DadJokeAPI
         public async Task<JokeResponse> GetRandomJokeAsync()
         {
             var request = GetHeaders();
-            var response = await _httpClient.GetAsync(BaseURL + "/random/joke", HttpCompletionOption.ResponseHeadersRead);
+            var response = await _httpClient.GetAsync(BaseUrl + "random/joke", HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
-            var joke = JsonConvert.DeserializeObject<JokeResponse>(json);
-            return new JokeResponse(joke.Success, joke.Body);
+            var jokeResponse = JsonConvert.DeserializeObject<JokeResponse>(json);
+            return jokeResponse;
         }
 
-        public async Task<JokeResponse> GetRandomJokesAsync(int count)
+
+        public async Task<JokeResponse[]> GetRandomJokesAsync(int count)
         {
-            var request = GetHeaders();
-            var jokeList = new JokeResponse[count];
             if (count < 1 || count > 5)
             {
                 throw new ArgumentOutOfRangeException(nameof(count), "Count must be between 1 and 5.");
             }
 
-            var response = await _httpClient.GetAsync(BaseURL + $"random/joke?count={count}", HttpCompletionOption.ResponseHeadersRead);
+            var request = GetHeaders();
+            var response = await _httpClient.GetAsync(BaseUrl + $"random/joke?count={count}", HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
-            var jokes = JsonConvert.DeserializeObject<JokeResponse>(json);
-            return new JokeResponse(jokes.Success, jokes.Body);
-            //return jokes.Select(j => $"{j.Setup} {j.Punchline}").ToArray();
+            var jokeResponse = JsonConvert.DeserializeObject<JokeResponse[]>(json);
+            return jokeResponse;
+        }
+
+        public JokeCountResponse GetJokeCountAsync()
+        {
+            var request = GetHeaders();
+            var response = _httpClient.GetAsync(BaseUrl + "joke/count", HttpCompletionOption.ResponseHeadersRead).Result;
+            response.EnsureSuccessStatusCode();
+            var json = response.Content.ReadAsStringAsync().Result;
+            var count = JsonConvert.DeserializeObject<int>(json);
+            return new JokeCountResponse(true, count);
         }
 
 
