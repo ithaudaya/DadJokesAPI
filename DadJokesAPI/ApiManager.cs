@@ -18,13 +18,27 @@ namespace DadJokeAPI
         public async Task<JokeResponse> GetRandomJokeAsync()
         {
             var request = GetHeaders();
-            var response = await _httpClient.GetAsync(BaseUrl + "random/joke", HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync();
-            var jokeResponse = JsonConvert.DeserializeObject<JokeResponse>(json);
-            return jokeResponse;
+            try
+            {
+                var response = await _httpClient.GetAsync($"{BaseUrl}random/joke", HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
+                var json = await response.Content.ReadAsStringAsync();
+                var jokeResponse = JsonConvert.DeserializeObject<JokeResponse>(json);
+                if (jokeResponse != null)
+                {
+                    return jokeResponse;
+                }
+                else
+                {
+                    throw new Exception("Error deserializing JSON response");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle the exception or rethrow it
+                throw new Exception("Error fetching random joke", ex);
+            }
         }
-
 
         public async Task<JokeResponse[]> GetRandomJokesAsync(int count)
         {
@@ -34,23 +48,55 @@ namespace DadJokeAPI
             }
 
             var request = GetHeaders();
-            var response = await _httpClient.GetAsync(BaseUrl + $"random/joke?count={count}", HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync();
-            var jokeResponse = JsonConvert.DeserializeObject<JokeResponse[]>(json);
-            return jokeResponse;
+            try
+            {
+                var response = await _httpClient.GetAsync($"{BaseUrl}random/joke?count={count}", HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
+                var json = await response.Content.ReadAsStringAsync();
+                var jokeResponses = JsonConvert.DeserializeObject<JokeResponse[]>(json);
+                if (jokeResponses != null)
+                {
+                    return jokeResponses;
+                }
+                else
+                {
+                    throw new Exception("Error deserializing JSON response");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle the exception or rethrow it
+                throw new Exception("Error fetching random jokes", ex);
+            }
         }
 
-        public JokeCountResponse GetJokeCountAsync()
+        public async Task<JokeCountResponse> GetJokeCountAsync()
         {
             var request = GetHeaders();
-            var response = _httpClient.GetAsync(BaseUrl + "joke/count", HttpCompletionOption.ResponseHeadersRead).Result;
-            response.EnsureSuccessStatusCode();
-            var json = response.Content.ReadAsStringAsync().Result;
-            var count = JsonConvert.DeserializeObject<int>(json);
-            return new JokeCountResponse(true, count);
+            try
+            {
+                var response = await _httpClient.GetAsync(BaseUrl + "joke/count", HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
+                var json = await response.Content.ReadAsStringAsync();
+                var jokeCountResponse = JsonConvert.DeserializeObject<JokeCountResponse>(json);
+                if (jokeCountResponse != null)
+                {
+                    return jokeCountResponse;
+                }
+                else
+                {
+                    throw new Exception("Error deserializing JSON response");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception("Error fetching joke count", ex);
+            }
+            catch (JsonException ex)
+            {
+                throw new Exception("Error parsing JSON", ex);
+            }
         }
-
 
         private HttpRequestMessage GetHeaders()
         {
