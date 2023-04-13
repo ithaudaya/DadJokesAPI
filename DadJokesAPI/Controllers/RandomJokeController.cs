@@ -21,7 +21,7 @@ namespace DadJokeAPI.Controllers
             _apiManager = apiManager;
         }
 
-        [HttpGet]
+        [HttpGet("getRandomJoke")]
         public async Task<IActionResult> GetRandomJoke()
         {
             try
@@ -41,17 +41,21 @@ namespace DadJokeAPI.Controllers
 
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetJokeCount(int count)
+        [HttpGet("getRandomJokes")]
+        public async Task<IActionResult> GetRandomJokes(int count)
         {
             try
             {
-                var response = await _apiManager.GetRandomJokesAsync(count);
-                if (response.Success == true)
+                var jokes = await _apiManager.GetRandomJokesAsync(count);
+                if (jokes.Length == 0)
                 {
-                    return Ok(response);
+                    return NotFound();
                 }
-                return BadRequest();
+                return Ok(jokes);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
@@ -60,6 +64,24 @@ namespace DadJokeAPI.Controllers
             }
         }
 
+        [HttpGet("getJokeCount")]
+        public async Task<IActionResult> GetJokeCount()
+        {
+            try
+            {
+                var response = await _apiManager.GetJokeCountAsync();
+                if (response.Success == true)
+                {
+                    return Ok(response);
+                }
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = "Error processing the request";
+                return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+            }
+        }
 
     }
 }
