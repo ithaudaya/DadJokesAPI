@@ -22,6 +22,7 @@ namespace DadJokeAPI.Controllers
         }
 
         [HttpGet("getRandomJoke")]
+        [Authorize]
         public async Task<IActionResult> GetRandomJoke()
         {
             try
@@ -42,6 +43,7 @@ namespace DadJokeAPI.Controllers
         }
 
         [HttpGet("getRandomJokes")]
+        [Authorize]
         public async Task<IActionResult> GetRandomJokes(int count)
         {
             try
@@ -65,6 +67,7 @@ namespace DadJokeAPI.Controllers
         }
 
         [HttpGet("getJokeCount")]
+        [Authorize]
         public async Task<IActionResult> GetJokeCount()
         {
             try
